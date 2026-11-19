@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search, ShoppingBag, Heart, Star, Eye, ShieldCheck, Truck, RefreshCw,
-  Phone, Mail, MapPin, ChevronRight, ChevronLeft, Sparkles, Filter, SlidersHorizontal,
-  ArrowRight, Store, Check, Award, Layers, Feather, Gem, CircleDot, Palette,
-  Menu, X, ChevronDown, User, Globe, Share2, Camera
+  Phone, Mail, MapPin, ChevronRight, ChevronLeft, Sparkles, Filter,
+  ArrowRight, Store, Check, Award, Feather, Gem, CircleDot,
+  Menu, X, ChevronDown, User, Share2, Camera, Clock, Tag
 } from 'lucide-react';
+import Logo from './Logo';
 import { storeInfo, categories } from '../data/products';
 
 export default function Storefront({
@@ -27,24 +28,74 @@ export default function Storefront({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('popular');
   const [displayLimit, setDisplayLimit] = useState(12);
-  const [showFaviconIndex, setShowFaviconIndex] = useState(false);
-  
-  // Hero Carousel State (0: NOVA Story, 1: Emerald Luxury, 2: ONDERA Heritage)
+
+  // Hero Carousel State
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
   const [isHeroHovered, setIsHeroHovered] = useState(false);
   const [touchStartX, setTouchStartX] = useState(null);
 
-  // Auto-scroll horizontal hero slider every 6.5s (pauses on mouse hover)
+  const heroSlides = [
+    {
+      id: 'shawls',
+      badge: 'Royal Winter Collection',
+      tagline: 'Pure Kashmiri Pashmina & Rajasthani Dushalas',
+      title: 'Wrap Your Winter in Royal Grandeur',
+      description: 'Hand-woven artisan Sozni needlework and pure cashmere wraps tailored for heritage winter weddings in Sikar & beyond.',
+      cta: 'Explore Shawls',
+      image: '/images/collections/col_shawls.jpg',
+      category: 'shawls',
+      priceTag: 'From ₹1,299',
+      highlight: '100% Pure Handloom'
+    },
+    {
+      id: 'bangles',
+      badge: 'Heritage Bridal Ornaments',
+      tagline: 'Authentic Jaipur & Sikar Lac Chudha',
+      title: 'Embrace Timeless Bridal Elegance',
+      description: 'Handcrafted with Kundan, Polki, and emerald glass accents. Adorn your special occasions with auspicious Rajasthani bangles.',
+      cta: 'Shop Bridal Bangles',
+      image: '/images/collections/col_bangles.jpg',
+      category: 'bangles',
+      priceTag: 'Sets from ₹499',
+      highlight: 'Auspicious Bridal Lac'
+    },
+    {
+      id: 'cosmetics',
+      badge: 'Festive Beauty & Radiance',
+      tagline: '24K Gold & Herbal Kumkumadi Glow',
+      title: 'Glow Naturally, Live Radiantly',
+      description: 'Dermatologically tested Ayurvedic bridal HD foundations, 16-hour velvety matte lipsticks, and pure herbal kajal.',
+      cta: 'Shop Cosmetics',
+      image: '/images/collections/col_cosmetics.jpg',
+      category: 'cosmetics',
+      priceTag: 'From ₹199',
+      highlight: 'Dermatologically Tested'
+    },
+    {
+      id: 'showpieces',
+      badge: 'Artisan Home Decor & Gifts',
+      tagline: 'Hand-Carved Brass & Marble Idols',
+      title: 'Sacred Idols & Rajasthani Keepsakes',
+      description: 'Bring blessings and heritage royal charm home with artisan peacock diyas, gold-leaf elephants, and hand-painted pottery.',
+      cta: 'Explore Gifts',
+      image: '/images/collections/col_showpieces.jpg',
+      category: 'showpieces',
+      priceTag: 'Starting ₹349',
+      highlight: 'Pure Brass & Ceramic'
+    }
+  ];
+
+  // Auto-scroll horizontal hero slider every 6s (pauses on mouse hover)
   useEffect(() => {
     if (isHeroHovered) return;
     const slideTimer = setInterval(() => {
-      setCurrentHeroSlide(prev => (prev + 1) % 3);
-    }, 6500);
+      setCurrentHeroSlide(prev => (prev + 1) % heroSlides.length);
+    }, 6000);
     return () => clearInterval(slideTimer);
-  }, [isHeroHovered]);
+  }, [isHeroHovered, heroSlides.length]);
 
-  const nextHeroSlide = () => setCurrentHeroSlide(prev => (prev + 1) % 3);
-  const prevHeroSlide = () => setCurrentHeroSlide(prev => (prev - 1 + 3) % 3);
+  const nextHeroSlide = () => setCurrentHeroSlide(prev => (prev + 1) % heroSlides.length);
+  const prevHeroSlide = () => setCurrentHeroSlide(prev => (prev - 1 + heroSlides.length) % heroSlides.length);
 
   const handleTouchStart = (e) => {
     if (e.touches && e.touches[0]) {
@@ -58,24 +109,6 @@ export default function Storefront({
     else if (diff < -50) prevHeroSlide();
     setTouchStartX(null);
   };
-
-  // Active Popular Collection filter/view state
-  const [activeCollectionTab, setActiveCollectionTab] = useState('all');
-
-  // Countdown timer for "News and Inspiration / New Arrivals"
-  const [timeLeft, setTimeLeft] = useState({ days: 14, hours: 8, minutes: 42, seconds: 18 });
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
-        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        if (prev.days > 0) return { ...prev, days: prev.days - 1, hours: 23, minutes: 59, seconds: 59 };
-        return prev;
-      });
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   // Filtered Products
   const filteredProducts = useMemo(() => {
@@ -98,45 +131,69 @@ export default function Storefront({
 
   const totalCartUnits = cartItems.reduce((acc, i) => acc + i.qty, 0);
 
+  // Category story circles data
+  const storyCategories = [
+    { id: 'cosmetics', name: 'Cosmetics', count: 12, img: '/images/collections/col_cosmetics.jpg' },
+    { id: 'bangles', name: 'Bangles', count: 12, img: '/images/collections/col_bangles.jpg' },
+    { id: 'shawls', name: 'Shawls', count: 12, img: '/images/collections/col_shawls.jpg' },
+    { id: 'socks', name: 'Socks', count: 12, img: '/images/collections/col_socks.jpg' },
+    { id: 'undergarments', name: 'Innerwear', count: 12, img: '/images/products/undergarments_01.png' },
+    { id: 'showpieces', name: 'Gifts & Idols', count: 12, img: '/images/collections/col_showpieces.jpg' }
+  ];
+
   return (
-    <div className="min-h-screen bg-white text-[#262626] font-sans antialiased selection:bg-[#064E3B] selection:text-white relative">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1F2937] font-sans antialiased selection:bg-[#064E3B] selection:text-white relative pb-16 sm:pb-0">
       
+      {/* Ambient background glow accents */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-[#064E3B]/5 blur-3xl" />
+        <div className="absolute top-1/3 -right-40 w-[30rem] h-[30rem] rounded-full bg-[#FF7722]/5 blur-3xl" />
+        <div className="absolute bottom-10 left-1/4 w-80 h-80 rounded-full bg-[#D4AF37]/5 blur-3xl" />
+      </div>
+
       {/* ============================================================== */}
-      {/* 1. COLLAPSIBLE SLIDE-OUT SIDEBAR NAVIGATION */}
+      {/* 1. COLLAPSIBLE SLIDE-OUT MOBILE SIDEBAR NAVIGATION             */}
       {/* ============================================================== */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-opacity"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs transition-opacity"
         />
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 z-50 w-72 bg-white shadow-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out border-r border-gray-200 ${
+        className={`fixed top-0 left-0 bottom-0 z-50 w-80 max-w-[85vw] bg-[#FAF7F2] shadow-2xl flex flex-col justify-between transition-transform duration-300 ease-in-out border-r border-[#EDE4D3] ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="overflow-y-auto p-6">
           {/* Sidebar Brand Header */}
-          <div className="flex items-center justify-between pb-6 border-b border-gray-100">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#064E3B] text-[#FF7722] font-serif font-black text-xs flex items-center justify-center border-2 border-[#FF7722] shadow-xs">
-                SSS
-              </div>
-              <div>
-                <span className="font-serif font-black text-lg tracking-tight text-[#064E3B] block leading-none">
-                  SIKAR SEASON<span className="text-[#FF7722]">.</span>
-                </span>
-                <span className="text-[9px] font-bold tracking-widest text-[#FF7722] uppercase block mt-1">
-                  ESTD. RAJASTHAN
-                </span>
-              </div>
-            </div>
+          <div className="flex items-center justify-between pb-5 border-b border-[#EDE4D3]">
+            <Logo variant="compact" size="sm" />
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-gray-900"
+              className="p-2 hover:bg-black/5 rounded-xl text-gray-500 hover:text-gray-900 transition-colors"
             >
               <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Quick Mall POS Button */}
+          <div className="mt-5 p-3 rounded-2xl bg-gradient-to-br from-[#064E3B] to-[#043828] text-white shadow-md border border-[#FF7722]/30">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#FFE082]">Supermarket Billing</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#FF7722] text-[9px] font-black uppercase">Active</span>
+            </div>
+            <p className="text-xs font-semibold mt-1 text-emerald-100">DMart Style Cashier &amp; Khata POS</p>
+            <button
+              onClick={() => {
+                onSwitchToPos();
+                setSidebarOpen(false);
+              }}
+              className="w-full mt-3 py-2 bg-[#FF7722] hover:bg-[#D95305] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-colors"
+            >
+              <Store className="w-3.5 h-3.5" />
+              Open Mall POS Terminal
             </button>
           </div>
 
@@ -146,42 +203,23 @@ export default function Storefront({
               onClick={() => {
                 setSelectedCategory('all');
                 setSidebarOpen(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="w-full text-left py-2.5 px-3 rounded-lg hover:bg-gray-50 hover:text-[#064E3B] flex items-center justify-between"
+              className="w-full text-left py-2.5 px-3 rounded-xl hover:bg-white/80 hover:text-[#064E3B] flex items-center justify-between transition-colors"
             >
               <span>Home</span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </button>
 
-            {/* Pages Collapsible */}
-            <div>
-              <button
-                onClick={() => setPagesCollapsed(!pagesCollapsed)}
-                className="w-full text-left py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center justify-between text-gray-800"
-              >
-                <span>Pages</span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${pagesCollapsed ? 'rotate-180' : ''}`} />
-              </button>
-              {pagesCollapsed && (
-                <div className="pl-6 py-1 space-y-1 text-xs text-gray-600 border-l-2 border-gray-100 ml-4">
-                  <a href="#about" onClick={() => setSidebarOpen(false)} className="block py-1.5 hover:text-[#064E3B]">About Us</a>
-                  <a href="#team" onClick={() => setSidebarOpen(false)} className="block py-1.5 hover:text-[#064E3B]">About Team</a>
-                  <a href="#contact" onClick={() => setSidebarOpen(false)} className="block py-1.5 hover:text-[#064E3B]">Contact Us</a>
-                  <button onClick={() => { onOpenWishlist(); setSidebarOpen(false); }} className="block py-1.5 hover:text-[#064E3B]">Wishlist</button>
-                  <a href="#faq" onClick={() => setSidebarOpen(false)} className="block py-1.5 hover:text-[#064E3B]">FAQ</a>
-                </div>
-              )}
-            </div>
-
             {/* Shop Link */}
             <button
               onClick={() => {
-                document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
                 setSidebarOpen(false);
               }}
-              className="w-full text-left py-2.5 px-3 rounded-lg hover:bg-gray-50 hover:text-[#064E3B] flex items-center justify-between"
+              className="w-full text-left py-2.5 px-3 rounded-xl hover:bg-white/80 hover:text-[#064E3B] flex items-center justify-between transition-colors"
             >
-              <span>Shop All Products</span>
+              <span>Shop All Products ({products.length})</span>
               <ChevronRight className="w-4 h-4 text-gray-400" />
             </button>
 
@@ -189,22 +227,22 @@ export default function Storefront({
             <div>
               <button
                 onClick={() => setCategoriesCollapsed(!categoriesCollapsed)}
-                className="w-full text-left py-2.5 px-3 rounded-lg hover:bg-gray-50 flex items-center justify-between text-gray-800"
+                className="w-full text-left py-2.5 px-3 rounded-xl hover:bg-white/80 flex items-center justify-between text-gray-800 transition-colors"
               >
-                <span>Categories</span>
+                <span>Shop by Category</span>
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${categoriesCollapsed ? 'rotate-180' : ''}`} />
               </button>
               {categoriesCollapsed && (
-                <div className="pl-6 py-1 space-y-1 text-xs text-gray-600 border-l-2 border-gray-100 ml-4">
+                <div className="pl-4 py-1 space-y-1 text-xs text-gray-600 border-l-2 border-[#EDE4D3] ml-4">
                   {categories.filter(c => c.id !== 'all').map(cat => (
                     <button
                       key={cat.id}
                       onClick={() => {
                         setSelectedCategory(cat.id);
-                        document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
+                        document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
                         setSidebarOpen(false);
                       }}
-                      className="block w-full text-left py-1 hover:text-[#064E3B]"
+                      className="block w-full text-left py-1.5 px-2 rounded-lg hover:text-[#064E3B] hover:bg-white transition-colors"
                     >
                       {cat.name}
                     </button>
@@ -213,489 +251,438 @@ export default function Storefront({
               )}
             </div>
 
-            {/* Blog */}
-            <a
-              href="#blogs"
-              onClick={() => setSidebarOpen(false)}
-              className="block py-2.5 px-3 rounded-lg hover:bg-gray-50 hover:text-[#064E3B]"
+            {/* Collections Link */}
+            <button
+              onClick={() => {
+                document.getElementById('popular-collections')?.scrollIntoView({ behavior: 'smooth' });
+                setSidebarOpen(false);
+              }}
+              className="w-full text-left py-2.5 px-3 rounded-xl hover:bg-white/80 hover:text-[#064E3B] flex items-center justify-between transition-colors"
             >
-              Blog
-            </a>
+              <span>Featured Collections</span>
+              <ChevronRight className="w-4 h-4 text-gray-400" />
+            </button>
 
-            {/* Franchise POS Button in Sidebar */}
-            <div className="pt-4 border-t border-gray-100 mt-4">
-              <button
-                onClick={() => {
-                  onSwitchToPos();
-                  setSidebarOpen(false);
-                }}
-                className="w-full py-3 px-4 bg-[#064E3B] hover:bg-[#043828] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-md transition-colors"
-              >
-                <Store className="w-4 h-4 text-[#FF7722]" />
-                Franchise POS Mall Terminal
-              </button>
-            </div>
+            {/* Wishlist Link */}
+            <button
+              onClick={() => {
+                onOpenWishlist();
+                setSidebarOpen(false);
+              }}
+              className="w-full text-left py-2.5 px-3 rounded-xl hover:bg-white/80 hover:text-rose-600 flex items-center justify-between transition-colors"
+            >
+              <span>Wishlist ({wishlistItems.length})</span>
+              <Heart className="w-4 h-4 text-rose-500" />
+            </button>
+
+            {/* Contact */}
+            <a
+              href="#contact"
+              onClick={() => setSidebarOpen(false)}
+              className="block py-2.5 px-3 rounded-xl hover:bg-white/80 hover:text-[#064E3B] transition-colors"
+            >
+              Store &amp; Contact Details
+            </a>
           </nav>
         </div>
 
         {/* Sidebar Footer Contacts */}
-        <div className="p-4 bg-gray-50 border-t border-gray-100 text-xs text-gray-600 space-y-1">
-          <p className="font-bold text-gray-900">{storeInfo.name}</p>
-          <p>Pooja Sharma: {storeInfo.ownerPhone}</p>
-          <p>Priyanshu: {storeInfo.managerPhone}</p>
+        <div className="p-4 bg-white/60 border-t border-[#EDE4D3] text-xs text-gray-600 space-y-1.5">
+          <p className="font-bold text-gray-900 font-serif">{storeInfo.name}</p>
+          <p className="text-[11px] text-gray-500">Station Road, Main Market, Sikar, Rajasthan</p>
+          <div className="pt-1 flex flex-col gap-0.5 text-[11px]">
+            <a href="tel:9602172335" className="text-[#064E3B] font-bold hover:underline">
+              Owner: Pooja Sharma (9602172335)
+            </a>
+            <a href="tel:8306447955" className="text-[#FF7722] font-bold hover:underline">
+              Franchise Head: Priyanshu (+91 8306447955)
+            </a>
+          </div>
         </div>
       </aside>
 
       {/* ============================================================== */}
-      {/* 2. TOP FIXED HEADER                                          */}
+      {/* 2. TRANSPARENT BEIGE TINTED STICKY NAVBAR                      */}
       {/* ============================================================== */}
-      <header className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm border-b border-gray-100 transition-all">
-        <div className="max-w-7xl mx-auto px-4 h-18 flex items-center justify-between gap-4">
+      <header className="sticky top-0 left-0 right-0 z-40 bg-[#FAF7F2]/90 backdrop-blur-md border-b border-[#EDE4D3] shadow-[0_2px_15px_-3px_rgba(6,78,59,0.04)] transition-all">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-18 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
           
-          {/* Left: Hamburger menu & Logo */}
-          <div className="flex items-center gap-4">
+          {/* Left: Hamburger menu & Royal Logo */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-2 hover:bg-gray-100 rounded-lg text-gray-800 transition-colors"
+              className="p-2 hover:bg-black/5 rounded-xl text-gray-800 transition-colors"
               title="Open Navigation Menu"
+              aria-label="Open menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-6 h-6 text-[#064E3B]" />
             </button>
 
-            <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setSelectedCategory('all')}>
-              <div className="w-9 h-9 rounded-full bg-[#064E3B] text-[#FAF7F2] font-serif font-black text-xs flex items-center justify-center border-2 border-[#FF7722] shadow-xs">
-                SSS
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif font-black text-xl sm:text-2xl tracking-tight text-[#064E3B] leading-none">
-                  SIKAR SEASON<span className="text-[#FF7722]">.</span>
-                </span>
-                <span className="text-[9px] font-bold tracking-[0.2em] text-[#FF7722] uppercase leading-none mt-1">
-                  PREMIUM STORE &amp; MALL POS
-                </span>
-              </div>
+            <div
+              className="cursor-pointer group flex items-center"
+              onClick={() => {
+                setSelectedCategory('all');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              {/* Responsive Logo */}
+              <Logo variant="full" size="md" className="hidden sm:inline-flex" />
+              <Logo variant="compact" size="sm" className="inline-flex sm:hidden" />
             </div>
           </div>
 
           {/* Center Navigation Links (Desktop) */}
-          <nav className="hidden lg:flex items-center gap-8 text-sm font-bold text-gray-700 uppercase tracking-wider">
+          <nav className="hidden lg:flex items-center gap-7 text-xs font-bold text-gray-700 uppercase tracking-widest">
             <button
               onClick={() => {
                 setSelectedCategory('all');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="hover:text-[#064E3B] transition-colors"
+              className="hover:text-[#064E3B] transition-colors py-1 cursor-pointer"
             >
               Home
             </button>
             <button
               onClick={() => document.getElementById('popular-collections')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-[#064E3B] transition-colors"
+              className="hover:text-[#064E3B] transition-colors py-1 cursor-pointer"
             >
               Collections
             </button>
             <button
-              onClick={() => document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-[#064E3B] transition-colors"
+              onClick={() => document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' })}
+              className="hover:text-[#064E3B] transition-colors py-1 cursor-pointer"
             >
-              Shop
+              Catalog
             </button>
-            <button
-              onClick={() => document.getElementById('top-selling-section')?.scrollIntoView({ behavior: 'smooth' })}
-              className="hover:text-[#064E3B] transition-colors"
-            >
-              Top Selling
-            </button>
-            <a href="#blogs" className="hover:text-[#064E3B] transition-colors">
-              Blog
-            </a>
-            <a href="#contact" className="hover:text-[#064E3B] transition-colors">
-              Contact
+            <a href="#contact" className="hover:text-[#064E3B] transition-colors py-1">
+              Store Info
             </a>
           </nav>
 
           {/* Right Header Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             
             {/* Live Search Trigger / Bar */}
             <div className="relative">
               {searchOpen ? (
-                <div className="flex items-center bg-gray-100 rounded-full px-3 py-1.5 text-xs animate-in fade-in duration-200">
+                <div className="flex items-center bg-white border border-[#EDE4D3] shadow-xs rounded-full px-3 py-1.5 text-xs animate-in fade-in duration-200">
+                  <Search className="w-3.5 h-3.5 text-gray-400 mr-2 flex-shrink-0" />
                   <input
                     type="text"
                     autoFocus
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search products..."
-                    className="bg-transparent border-0 focus:outline-none w-36 sm:w-52 text-gray-900"
+                    placeholder="Search cosmetics, bangles, shawls..."
+                    className="bg-transparent border-0 focus:outline-none w-36 sm:w-56 text-gray-900 text-xs"
                   />
-                  <button onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={() => setSearchOpen(false)} className="text-gray-400 hover:text-gray-600 ml-1">
                     ✕
                   </button>
                 </div>
               ) : (
                 <button
                   onClick={() => setSearchOpen(true)}
-                  className="p-2 text-gray-700 hover:text-[#064E3B] transition-colors"
-                  title="Search"
+                  className="p-2 text-gray-700 hover:text-[#064E3B] hover:bg-white/70 rounded-full transition-colors"
+                  title="Search Products"
+                  aria-label="Search products"
                 >
                   <Search className="w-5 h-5" />
                 </button>
               )}
             </div>
 
-            {/* User Account / Contact Dropdown */}
-            <div className="relative group hidden sm:block">
-              <button className="p-2 text-gray-700 hover:text-[#064E3B] transition-colors" title="Account &amp; Contacts">
-                <User className="w-5 h-5" />
-              </button>
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 p-4 text-xs space-y-2 hidden group-hover:block z-50">
-                <p className="font-bold text-gray-900 border-b pb-1">Sikar Season Shop Support</p>
-                <p className="text-gray-600">Owner: Pooja Sharma (9602172335)</p>
-                <p className="text-gray-600">Head: Priyanshu Sharma (+91 8306447955)</p>
-                <p className="text-gray-600 text-[11px]">{storeInfo.email}</p>
-                <button
-                  onClick={onSwitchToPos}
-                  className="w-full mt-2 py-2 bg-[#064E3B] text-white rounded-lg font-bold text-center"
-                >
-                  Open POS Software
-                </button>
-              </div>
-            </div>
-
             {/* Wishlist Icon */}
             <button
               onClick={onOpenWishlist}
-              className="relative p-2 text-gray-700 hover:text-rose-600 transition-colors"
-              title="Wishlist"
+              className="relative p-2 text-gray-700 hover:text-rose-600 hover:bg-white/70 rounded-full transition-colors"
+              title="Saved Wishlist"
+              aria-label="Wishlist"
             >
               <Heart className="w-5 h-5" />
               {wishlistItems.length > 0 && (
-                <span className="absolute 1 top-1 right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center shadow-xs animate-pulse">
                   {wishlistItems.length}
                 </span>
               )}
             </button>
 
-            {/* Cart Icon with badge */}
+            {/* Shopping Bag Icon with badge */}
             <button
               onClick={onOpenCart}
-              className="relative p-2 text-gray-700 hover:text-[#064E3B] transition-colors"
+              className="relative p-2 text-gray-700 hover:text-[#064E3B] hover:bg-white/70 rounded-full transition-colors"
               title="Shopping Bag"
+              aria-label="Shopping Cart"
             >
               <ShoppingBag className="w-5 h-5" />
               {totalCartUnits > 0 && (
-                <span className="absolute 1 top-1 right-1 w-4 h-4 rounded-full bg-[#FF7722] text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#FF7722] text-white text-[9px] font-black flex items-center justify-center shadow-xs">
                   {totalCartUnits}
                 </span>
               )}
             </button>
 
-            {/* POS Billing Switch Button */}
+            {/* MALL FRANCHISE POS BUTTON (Desktop & Mobile) */}
             <button
               onClick={onSwitchToPos}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-[#064E3B] hover:bg-[#043828] text-white rounded-xl text-xs font-bold shadow-xs transition-colors"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-[#064E3B] to-[#043828] hover:from-[#043828] hover:to-[#032D22] text-white rounded-xl text-xs font-bold shadow-sm transition-all hover:scale-103 cursor-pointer border border-[#FF7722]/30"
+              title="Switch to DMart Style Franchise POS Terminal"
             >
               <Store className="w-3.5 h-3.5 text-[#FF7722]" />
-              <span>Mall POS</span>
+              <span className="hidden sm:inline">Mall POS</span>
+              <span className="sm:hidden text-[11px]">POS</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container below fixed header */}
-      <main className="pt-18">
+      {/* Main Container */}
+      <main className="relative z-10">
         
         {/* ============================================================== */}
-        {/* 1. HERO SECTION (UNIFIED FIXED FRAME WITH HORIZONTAL SCROLL)   */}
+        {/* 3. REAL INTERACTIVE E-COMMERCE HERO SECTION                   */}
         {/* ============================================================== */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-4">
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 pb-6">
           <div
-            className="relative rounded-[32px] sm:rounded-[40px] md:rounded-[48px] border-[6px] sm:border-[8px] md:border-[10px] border-[#064E3B] bg-white overflow-hidden shadow-2xl h-[580px] sm:h-[620px] md:h-[680px] flex flex-col justify-between select-none"
+            className="relative rounded-3xl sm:rounded-[36px] bg-gradient-to-br from-[#FFFFFF]/90 via-[#FAF7F2] to-[#F4EFE6] border border-[#EDE4D3] shadow-[0_8px_30px_rgb(6,78,59,0.06)] overflow-hidden p-6 sm:p-10 lg:p-12 transition-all"
             onMouseEnter={() => setIsHeroHovered(true)}
             onMouseLeave={() => setIsHeroHovered(false)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-            {/* 1. UNIFIED FIXED TOP FRAME BAR (Same position & style on all slides) */}
-            <div className="relative z-30 flex items-center justify-between px-5 sm:px-8 py-3.5 sm:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 flex-shrink-0">
+            {/* Subtle background luxury pattern */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#D4AF37]/10 via-transparent to-transparent pointer-events-none" />
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               
-              {/* Brand Emblem */}
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#064E3B] text-[#FF7722] flex items-center justify-center font-bold text-sm shadow-xs border border-[#FF7722]/30">
-                  ✤
-                </div>
-                <div>
-                  <span className="font-serif font-black text-xs sm:text-sm tracking-tight text-[#064E3B] uppercase block leading-none">
-                    SIKAR SEASON<span className="text-[#FF7722]">.</span>
-                  </span>
-                  <span className="text-[8px] font-mono font-bold tracking-widest text-[#FF7722] uppercase block mt-0.5">
-                    HEIRLOOM RAJASTHAN
-                  </span>
-                </div>
-              </div>
-
-              {/* Center Quick Switcher Pills (Horizontal Navigation Tabs) */}
-              <div className="hidden md:flex items-center gap-1.5 bg-gray-100/90 p-1 rounded-full border border-gray-200">
-                <button
-                  onClick={() => setCurrentHeroSlide(0)}
-                  className={`px-3.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                    currentHeroSlide === 0
-                      ? 'bg-[#064E3B] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-950'
-                  }`}
-                >
-                  01. Kashmiri Shawl
-                </button>
-                <button
-                  onClick={() => setCurrentHeroSlide(1)}
-                  className={`px-3.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                    currentHeroSlide === 1
-                      ? 'bg-[#FF7722] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-950'
-                  }`}
-                >
-                  02. Bridal Bangles
-                </button>
-                <button
-                  onClick={() => setCurrentHeroSlide(2)}
-                  className={`px-3.5 py-1 rounded-full text-[11px] font-bold transition-all cursor-pointer ${
-                    currentHeroSlide === 2
-                      ? 'bg-[#3C4D35] text-white shadow-xs'
-                      : 'text-gray-600 hover:text-gray-950'
-                  }`}
-                >
-                  03. 24K Cosmetics
-                </button>
-              </div>
-
-              {/* Right Frame Controls: Slide Counter + Arrow Buttons + Action Pill */}
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                {/* Slide Counter */}
-                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-[11px] font-mono font-bold text-gray-700">
-                  <span className="text-[#064E3B]">0{currentHeroSlide + 1}</span>
-                  <span className="text-gray-400">/</span>
-                  <span className="text-gray-500">03</span>
-                </div>
-
-                {/* Left/Right Slide Arrows */}
-                <div className="flex items-center gap-1">
-                  <button
-                    onClick={prevHeroSlide}
-                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-[#064E3B] hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer border border-gray-200 shadow-xs"
-                    title="Previous Slide"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={nextHeroSlide}
-                    className="w-8 h-8 rounded-full bg-gray-100 hover:bg-[#064E3B] hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer border border-gray-200 shadow-xs"
-                    title="Next Slide"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Contextual Action Button */}
-                <button
-                  onClick={() => {
-                    const catMap = ['shawls', 'bangles', 'cosmetics'];
-                    setSelectedCategory(catMap[currentHeroSlide]);
-                    document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="hidden sm:flex items-center gap-1.5 px-4 py-1.5 bg-[#1A1A1A] hover:bg-black text-white rounded-full text-xs font-bold tracking-wide transition-all shadow-xs hover:scale-103 cursor-pointer"
-                >
-                  <span>
-                    {currentHeroSlide === 0
-                      ? 'Shop Shawls'
-                      : currentHeroSlide === 1
-                      ? 'Shop Bangles'
-                      : 'Shop Cosmetics'}
-                  </span>
-                  <span className="text-[#FF7722]">↗</span>
-                </button>
-              </div>
-
-            </div>
-
-            {/* 2. HORIZONTAL SLIDING VIEWPORT TRACK */}
-            <div className="relative flex-1 w-full overflow-hidden">
-              <div
-                className="flex h-full w-full transition-transform duration-700 ease-in-out"
-                style={{ transform: `translateX(-${currentHeroSlide * 100}%)` }}
-              >
+              {/* Left Column: Authentic Brand Typography & CTAs */}
+              <div className="lg:col-span-7 space-y-4 sm:space-y-6">
                 
-                {/* -------------------------------------------------------- */}
-                {/* SLIDE 0: COMPLETE SHAWL HERO BANNER (KASHMIRI PASHMINA)  */}
-                {/* -------------------------------------------------------- */}
-                <div
-                  className="w-full h-full flex-shrink-0 relative overflow-hidden bg-white flex items-center justify-center cursor-pointer group"
-                  onClick={() => {
-                    setSelectedCategory('shawls');
-                    document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  title="Explore Kashmiri Pashmina Shawls Collection"
-                >
-                  <img
-                    src="/images/hero/hero_complete_shawl.png"
-                    alt="Sikar Season - Kashmiri Shawls Hero Artwork"
-                    className="w-full h-full object-contain sm:object-cover transition-transform duration-700 group-hover:scale-[1.01]"
-                  />
+                {/* Royal Heritage Tag */}
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#064E3B]/10 border border-[#064E3B]/20 text-[#064E3B] text-[11px] sm:text-xs font-bold tracking-wide">
+                  <span className="w-2 h-2 rounded-full bg-[#FF7722] animate-ping" />
+                  <span>⚜️ Handcrafted Rajasthani Heritage • Station Road, Sikar</span>
                 </div>
 
-                {/* -------------------------------------------------------- */}
-                {/* SLIDE 1: COMPLETE BANGLES HERO BANNER (HERITAGE BANGLES)  */}
-                {/* -------------------------------------------------------- */}
-                <div
-                  className="w-full h-full flex-shrink-0 relative overflow-hidden bg-[#FAF5F0] flex items-center justify-center cursor-pointer group"
-                  onClick={() => {
-                    setSelectedCategory('bangles');
-                    document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  title="Explore Rajasthani Bridal Bangles Collection"
-                >
-                  <img
-                    src="/images/hero/hero_complete_bangles.png"
-                    alt="Sikar Season - Royal Bangles Hero Artwork"
-                    className="w-full h-full object-contain sm:object-cover transition-transform duration-700 group-hover:scale-[1.01]"
-                  />
+                {/* Hero Headline */}
+                <div className="space-y-2">
+                  <p className="text-xs sm:text-sm font-bold uppercase tracking-[0.2em] text-[#FF7722]">
+                    {heroSlides[currentHeroSlide].badge}
+                  </p>
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 tracking-tight leading-[1.15] font-serif">
+                    {heroSlides[currentHeroSlide].title}
+                  </h1>
                 </div>
 
-                {/* -------------------------------------------------------- */}
-                {/* SLIDE 2: COMPLETE COSMETICS HERO BANNER (ONDERA STYLE)   */}
-                {/* -------------------------------------------------------- */}
-                <div
-                  className="w-full h-full flex-shrink-0 relative overflow-hidden bg-[#3C4D35] flex items-center justify-center cursor-pointer group"
-                  onClick={() => {
-                    setSelectedCategory('cosmetics');
-                    document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  title="Explore 24K Gold Radiant Bridal Cosmetics"
-                >
-                  <img
-                    src="/images/hero/hero_complete_cosmetics.png"
-                    alt="Sikar Season - 24K Gold Bridal Cosmetics Hero Artwork"
-                    className="w-full h-full object-contain sm:object-cover transition-transform duration-700 group-hover:scale-[1.01]"
-                  />
+                {/* Subtitle */}
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed max-w-xl">
+                  {heroSlides[currentHeroSlide].description}
+                </p>
+
+                {/* CTA Buttons */}
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
+                  <button
+                    onClick={() => {
+                      setSelectedCategory(heroSlides[currentHeroSlide].category);
+                      document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-6 sm:px-8 py-3.5 bg-[#064E3B] hover:bg-[#043828] text-white rounded-2xl text-xs sm:text-sm font-bold tracking-wide shadow-md transition-all hover:scale-102 flex items-center gap-2 cursor-pointer border border-[#064E3B]"
+                  >
+                    <span>{heroSlides[currentHeroSlide].cta}</span>
+                    <ArrowRight className="w-4 h-4 text-[#FF7722]" />
+                  </button>
+
+                  <button
+                    onClick={onSwitchToPos}
+                    className="px-5 sm:px-6 py-3.5 bg-white hover:bg-[#FAF7F2] text-[#064E3B] border border-[#EDE4D3] rounded-2xl text-xs sm:text-sm font-bold tracking-wide shadow-xs transition-all hover:border-[#064E3B] flex items-center gap-2 cursor-pointer"
+                  >
+                    <Store className="w-4 h-4 text-[#FF7722]" />
+                    <span>Mall Franchise POS</span>
+                  </button>
+                </div>
+
+                {/* Trust Perks Pill Bar */}
+                <div className="pt-4 border-t border-[#EDE4D3]/70 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-gray-600 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    <Truck className="w-4 h-4 text-[#064E3B]" />
+                    <span>Free Sikar Delivery</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-[#064E3B]" />
+                    <span>100% Authentic Quality</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-[#FF7722]" />
+                    <span>Govt GST Verified</span>
+                  </div>
                 </div>
 
               </div>
-            </div>
 
-            {/* 3. UNIFIED FIXED BOTTOM FRAME BAR (Timeline / Progress Indicators) */}
-            <div className="relative z-30 flex items-center justify-between px-6 sm:px-10 py-3 bg-white/95 backdrop-blur-md border-t border-gray-100 flex-shrink-0">
-              
-              {/* Slide Timeline Indicators */}
-              <div className="flex items-center gap-2 sm:gap-4 w-full max-w-lg">
-                {[
-                  { index: 0, label: '01. Kashmiri Shawl', cat: 'Pure Sozni' },
-                  { index: 1, label: '02. Bridal Bangles', cat: 'Kundan & Lac' },
-                  { index: 2, label: '03. 24K Cosmetics', cat: 'Gold Bridal' }
-                ].map(tab => (
-                  <button
-                    key={tab.index}
-                    onClick={() => setCurrentHeroSlide(tab.index)}
-                    className="flex-1 text-left py-1 group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-bold mb-1">
-                      <span className={currentHeroSlide === tab.index ? 'text-[#064E3B]' : 'text-gray-400 group-hover:text-gray-700'}>
-                        {tab.label}
-                      </span>
-                    </div>
-                    {/* Animated Progress Track */}
-                    <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full transition-all duration-500 ${
-                          currentHeroSlide === tab.index
-                            ? 'bg-[#064E3B] w-full'
-                            : 'bg-transparent w-0'
-                        }`}
+              {/* Right Column: Hero Visual Showcase */}
+              <div className="lg:col-span-5 relative">
+                
+                {/* Main Featured Visual Showcase Card */}
+                <div className="relative aspect-4/3 sm:aspect-square w-full rounded-2xl sm:rounded-3xl overflow-hidden bg-white shadow-xl border-2 border-[#EDE4D3] group">
+                  <img
+                    src={heroSlides[currentHeroSlide].image}
+                    alt={heroSlides[currentHeroSlide].title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+
+                  {/* Floating Top Badge */}
+                  <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#064E3B]/90 backdrop-blur-md text-[#FFE082] text-[10px] sm:text-xs font-bold shadow-md flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-[#FF7722]" />
+                    <span>{heroSlides[currentHeroSlide].highlight}</span>
+                  </div>
+
+                  {/* Floating Price Tag */}
+                  <div className="absolute bottom-3 right-3 px-3.5 py-1.5 rounded-xl bg-white/95 backdrop-blur-md text-gray-900 text-xs sm:text-sm font-bold shadow-lg border border-[#EDE4D3]">
+                    <span className="text-[#064E3B] font-serif">{heroSlides[currentHeroSlide].priceTag}</span>
+                  </div>
+
+                  {/* Manual Arrow Controls */}
+                  <div className="absolute inset-y-0 left-2 flex items-center">
+                    <button
+                      onClick={prevHeroSlide}
+                      className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all hover:scale-110"
+                      title="Previous Slide"
+                      aria-label="Previous slide"
+                    >
+                      ‹
+                    </button>
+                  </div>
+                  <div className="absolute inset-y-0 right-2 flex items-center">
+                    <button
+                      onClick={nextHeroSlide}
+                      className="w-8 h-8 rounded-full bg-white/80 hover:bg-white text-gray-800 flex items-center justify-center shadow-md transition-all hover:scale-110"
+                      title="Next Slide"
+                      aria-label="Next slide"
+                    >
+                      ›
+                    </button>
+                  </div>
+                </div>
+
+                {/* Hero Slide Tabs / Dots */}
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {heroSlides.map((slide, idx) => (
+                    <button
+                      key={slide.id}
+                      onClick={() => setCurrentHeroSlide(idx)}
+                      className={`h-2 rounded-full transition-all cursor-pointer ${
+                        currentHeroSlide === idx
+                          ? 'w-8 bg-[#064E3B]'
+                          : 'w-2 bg-[#EDE4D3] hover:bg-gray-400'
+                      }`}
+                      title={slide.title}
+                      aria-label={`Go to slide ${idx + 1}`}
+                    />
+                  ))}
+                </div>
+
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ============================================================== */}
+        {/* 4. INSTAGRAM-STYLE CATEGORY STORY CIRCLES                      */}
+        {/* ============================================================== */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FF7722]" />
+              <h2 className="text-xs sm:text-sm font-bold uppercase tracking-widest text-[#064E3B] font-serif">
+                Shop by Categories
+              </h2>
+            </div>
+            <button
+              onClick={() => { setSelectedCategory('all'); document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' }); }}
+              className="text-xs font-bold text-[#FF7722] hover:text-[#D95305] flex items-center gap-1 cursor-pointer"
+            >
+              <span>View All</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Horizontal scrollable story pills */}
+          <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-2 scrollbar-none">
+            {storyCategories.map(cat => {
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <div
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(isSelected ? 'all' : cat.id);
+                    document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="flex flex-col items-center flex-shrink-0 cursor-pointer group"
+                >
+                  {/* Story ring */}
+                  <div className={`p-0.5 rounded-full transition-all duration-300 ${
+                    isSelected
+                      ? 'ring-3 ring-[#064E3B] shadow-md scale-105'
+                      : 'ring-2 ring-[#EDE4D3] group-hover:ring-[#FF7722]'
+                  }`}>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden bg-white p-0.5">
+                      <img
+                        src={cat.img}
+                        alt={cat.name}
+                        className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Status / Autoplay Indicator */}
-              <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-gray-400">
-                <span className={`w-1.5 h-1.5 rounded-full ${isHeroHovered ? 'bg-amber-400' : 'bg-emerald-500 animate-pulse'}`} />
-                <span>{isHeroHovered ? 'PAUSED' : 'AUTO-SCROLLING'}</span>
-              </div>
-
-            </div>
-
+                  </div>
+                  
+                  <span className={`text-[11px] sm:text-xs font-bold mt-2 transition-colors ${
+                    isSelected ? 'text-[#064E3B]' : 'text-gray-700 group-hover:text-[#064E3B]'
+                  }`}>
+                    {cat.name}
+                  </span>
+                  <span className="text-[9px] text-gray-400 font-semibold">
+                    {cat.count} items
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </section>
 
         {/* ============================================================== */}
-        {/* 2. SOCIAL & HERITAGE TRUST BAR (NOVA STRIP REPLICATION)        */}
+        {/* 5. POPULAR FEATURED COLLECTIONS                                */}
         {/* ============================================================== */}
-        <section className="max-w-7xl mx-auto px-6 sm:px-10 py-6 border-b border-gray-200">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            
-            {/* Follow Links */}
-            <div className="flex items-center gap-4 text-xs font-bold text-gray-700 tracking-wider">
-              <span className="uppercase text-gray-400">Follow</span>
-              <div className="flex items-center gap-3 text-gray-800">
-                <a href="#contact" className="w-7 h-7 rounded-full bg-gray-100 hover:bg-[#064E3B] hover:text-white flex items-center justify-center transition-colors">
-                  <Camera className="w-3.5 h-3.5" />
-                </a>
-                <a href="#contact" className="w-7 h-7 rounded-full bg-gray-100 hover:bg-[#064E3B] hover:text-white flex items-center justify-center transition-colors">
-                  <Share2 className="w-3.5 h-3.5" />
-                </a>
-                <a href="https://wa.me/919602172335" target="_blank" rel="noreferrer" className="w-7 h-7 rounded-full bg-gray-100 hover:bg-[#064E3B] hover:text-white flex items-center justify-center transition-colors" title="WhatsApp Pooja Sharma">
-                  <Phone className="w-3.5 h-3.5" />
-                </a>
-              </div>
-            </div>
-
-            {/* Vertical Divider */}
-            <div className="hidden md:block w-px h-6 bg-gray-200" />
-
-            {/* Brand Heritage Credentials */}
-            <div className="flex flex-wrap items-center justify-center md:justify-end gap-6 sm:gap-8 lg:gap-10 text-[11px] sm:text-xs font-serif font-black tracking-widest text-gray-500 uppercase">
-              <span className="hover:text-[#064E3B] transition-colors">100% Pure Pashmina</span>
-              <span className="hover:text-[#064E3B] transition-colors">Jaipur Lac Chudha</span>
-              <span className="hover:text-[#064E3B] transition-colors">24K Gold Ayurveda</span>
-              <span className="hover:text-[#064E3B] transition-colors">Mall Franchise POS</span>
-              <span className="hover:text-[#064E3B] transition-colors">Govt GST Verified</span>
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 3. POPULAR COLLECTIONS (NOVA-INSPIRED BEST SELLER SECTION)     */}
-        {/* ============================================================== */}
-        <section id="popular-collections" className="py-16 px-4 max-w-7xl mx-auto">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+        <section id="popular-collections" className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-black text-gray-900 tracking-tight">
-                Popular Collections
+              <span className="text-xs font-bold uppercase tracking-widest text-[#FF7722] block mb-1">
+                Handpicked Specialties
+              </span>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-gray-900 tracking-tight">
+                Curated Royal Collections
               </h2>
-              <p className="text-xs sm:text-sm text-gray-500 mt-2">
-                Discover Royal Traditions &amp; Everyday Essentials from Sikar Season Shop
-              </p>
             </div>
 
-            {/* Arrow Pagination Controls */}
-            <div className="flex items-center gap-2.5 self-end sm:self-auto">
+            {/* Carousel Arrow Controls */}
+            <div className="flex items-center gap-2 self-end sm:self-auto">
               <button
                 onClick={() => {
                   const el = document.getElementById('collections-carousel-track');
-                  if (el) el.scrollBy({ left: -360, behavior: 'smooth' });
+                  if (el) el.scrollBy({ left: -320, behavior: 'smooth' });
                 }}
-                className="w-10 h-10 rounded-full border border-gray-300 hover:border-gray-900 flex items-center justify-center text-gray-700 hover:text-gray-900 transition-all cursor-pointer shadow-xs bg-white text-lg font-bold"
-                title="Previous Collection"
+                className="w-9 h-9 rounded-full border border-[#EDE4D3] hover:border-[#064E3B] flex items-center justify-center text-gray-700 hover:text-[#064E3B] transition-all cursor-pointer shadow-xs bg-white text-base font-bold"
+                title="Scroll Left"
+                aria-label="Previous collection"
               >
                 ‹
               </button>
               <button
                 onClick={() => {
                   const el = document.getElementById('collections-carousel-track');
-                  if (el) el.scrollBy({ left: 360, behavior: 'smooth' });
+                  if (el) el.scrollBy({ left: 320, behavior: 'smooth' });
                 }}
-                className="w-10 h-10 rounded-full bg-gray-950 text-white flex items-center justify-center hover:bg-[#064E3B] transition-all cursor-pointer shadow-sm text-lg font-bold"
-                title="Next Collection"
+                className="w-9 h-9 rounded-full bg-[#064E3B] hover:bg-[#043828] text-white flex items-center justify-center transition-all cursor-pointer shadow-xs text-base font-bold"
+                title="Scroll Right"
+                aria-label="Next collection"
               >
                 ›
               </button>
@@ -705,12 +692,13 @@ export default function Storefront({
           {/* 3 Large Rounded Collection Cards */}
           <div
             id="collections-carousel-track"
-            className="grid grid-cols-1 md:grid-cols-3 gap-7 overflow-x-auto pb-2 scroll-smooth"
+            className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-7 overflow-x-auto pb-2 scroll-smooth"
           >
             {[
               {
                 id: 'bangles',
                 title: 'Royal Bridal Lac Chudha',
+                subtitle: 'Auspicious Kundan & Meenakari Kadas',
                 location: 'Sikar Season Shop • Rajasthan',
                 image: '/images/collections/col_bangles.jpg',
                 rating: '4.9',
@@ -719,6 +707,7 @@ export default function Storefront({
               {
                 id: 'shawls',
                 title: 'Pure Kashmiri Pashmina',
+                subtitle: 'Authentic Sozni Needlework Weaves',
                 location: 'Handloom Artisan Weave',
                 image: '/images/collections/col_shawls.jpg',
                 rating: '4.9',
@@ -727,6 +716,7 @@ export default function Storefront({
               {
                 id: 'cosmetics',
                 title: '24K Gold Bridal Cosmetics',
+                subtitle: 'Kumkumadi Ayurvedic Radiance',
                 location: 'Ayurvedic Radiance Formula',
                 image: '/images/collections/col_cosmetics.jpg',
                 rating: '4.8',
@@ -737,38 +727,40 @@ export default function Storefront({
                 key={col.id}
                 onClick={() => {
                   setSelectedCategory(col.id);
-                  document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
+                  document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group cursor-pointer flex flex-col justify-between"
+                className="group cursor-pointer flex flex-col justify-between bg-white rounded-3xl p-4 border border-[#EDE4D3] shadow-xs hover:shadow-xl hover:border-[#064E3B]/30 transition-all duration-300"
               >
                 {/* Large Rounded Image Card */}
-                <div className="relative aspect-16/10 w-full rounded-3xl overflow-hidden bg-[#FAF7F2] border border-gray-100 shadow-sm transition-all duration-500 group-hover:shadow-xl group-hover:border-gray-200">
+                <div className="relative aspect-16/10 w-full rounded-2xl overflow-hidden bg-[#FAF7F2]">
                   <img
                     src={col.image}
                     alt={col.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-106"
                   />
-                  <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-xs rounded-full text-[10px] font-bold text-gray-900 uppercase tracking-wider shadow-xs">
+                  <div className="absolute top-3 left-3 px-3 py-1 bg-white/90 backdrop-blur-xs rounded-full text-[10px] font-bold text-gray-900 uppercase tracking-wider shadow-xs">
                     {col.count}
+                  </div>
+                  <div className="absolute top-3 right-3 px-2.5 py-1 bg-[#064E3B] text-white rounded-full text-[11px] font-bold flex items-center gap-1 shadow-xs">
+                    <Star className="w-3 h-3 fill-[#FF7722] text-[#FF7722]" />
+                    <span>{col.rating}</span>
                   </div>
                 </div>
 
                 {/* Card Info Details */}
-                <div className="pt-4 flex items-start justify-between gap-3">
+                <div className="pt-3.5 flex items-start justify-between gap-3">
                   <div>
-                    <h3 className="font-serif font-black text-lg text-gray-900 group-hover:text-[#064E3B] transition-colors leading-snug">
+                    <h3 className="font-serif font-black text-base sm:text-lg text-gray-900 group-hover:text-[#064E3B] transition-colors leading-snug">
                       {col.title}
                     </h3>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-1 font-medium">
-                      <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                    <p className="text-xs text-gray-500 mt-0.5">{col.subtitle}</p>
+                    <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-1 font-medium">
+                      <MapPin className="w-3 h-3 text-gray-400" />
                       <span>{col.location}</span>
                     </p>
                   </div>
-
-                  {/* Rating Badge (Emerald pill like NOVA) */}
-                  <div className="px-2.5 py-1 bg-[#064E3B] text-white rounded-full text-xs font-bold flex items-center gap-1 shadow-xs flex-shrink-0">
-                    <Star className="w-3 h-3 fill-[#FF7722] text-[#FF7722]" />
-                    <span>{col.rating}</span>
+                  <div className="w-8 h-8 rounded-full bg-[#FAF7F2] group-hover:bg-[#064E3B] group-hover:text-white text-[#064E3B] flex items-center justify-center transition-colors flex-shrink-0 mt-1">
+                    <ArrowRight className="w-4 h-4" />
                   </div>
                 </div>
               </div>
@@ -777,211 +769,78 @@ export default function Storefront({
         </section>
 
         {/* ============================================================== */}
-        {/* 3.5 CATEGORY FAVICON QUICK-NAV & VISUAL DIRECTORY              */}
+        {/* 6. MAIN PRODUCT CATALOG (MOBILE: STRICTLY 2 ITEMS PER ROW)    */}
         {/* ============================================================== */}
-        <section className="bg-white border-b border-gray-200 py-6 px-4 shadow-xs relative z-20">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+        <section id="shop-catalog" className="py-8 sm:py-12 px-3 sm:px-6 lg:px-8 max-w-7xl mx-auto scroll-mt-24">
+          
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
+            <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#FF7722]" />
-                <h3 className="text-xs font-bold uppercase tracking-widest text-[#064E3B]">
-                  Browse Collections by Category Favicon
-                </h3>
+                <span className="text-xs font-bold uppercase tracking-widest text-[#FF7722]">Complete Retail Inventory</span>
               </div>
-              <button
-                onClick={() => setShowFaviconIndex(!showFaviconIndex)}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#064E3B] text-xs font-bold text-[#064E3B] hover:bg-[#064E3B] hover:text-white transition-all shadow-xs self-start sm:self-auto cursor-pointer"
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-gray-900 tracking-tight mt-1">
+                Explore Sikar Season Collection
+              </h2>
+            </div>
+
+            {/* Sort & Filter Controls */}
+            <div className="flex items-center gap-2 self-start sm:self-auto">
+              <span className="text-xs font-semibold text-gray-500">Sort:</span>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="bg-white border border-[#EDE4D3] text-gray-800 text-xs font-bold rounded-xl px-3 py-2 focus:outline-none focus:border-[#064E3B] shadow-xs"
               >
-                <span>{showFaviconIndex ? 'Hide Favicon Index' : 'View All 72 Product Favicons (Visual Directory)'}</span>
-              </button>
+                <option value="popular">Most Popular</option>
+                <option value="rating">Highest Rated</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
             </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              {[
-                { id: 'cosmetics', name: 'Ladies Cosmetics', icon: '/favicons/cat_fav_cosmetics.png', count: 12 },
-                { id: 'bangles', name: 'Royal Bangles', icon: '/favicons/cat_fav_bangles.png', count: 12 },
-                { id: 'socks', name: 'Cashmere Socks', icon: '/favicons/cat_fav_socks.png', count: 12 },
-                { id: 'undergarments', name: 'Unisex Innerwear', icon: '/favicons/cat_fav_undergarments.png', count: 12 },
-                { id: 'showpieces', name: 'Brass Showpieces', icon: '/favicons/cat_fav_showpieces.png', count: 12 },
-                { id: 'shawls', name: 'Winter Shawls', icon: '/favicons/cat_fav_shawls.png', count: 12 }
-              ].map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => {
-                    setSelectedCategory(cat.id);
-                    document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className={`flex flex-col items-center p-3 rounded-2xl border transition-all duration-300 text-center group cursor-pointer ${
-                    selectedCategory === cat.id
-                      ? 'bg-[#FAF7F2] border-[#064E3B] shadow-sm scale-102 ring-2 ring-[#064E3B]/20'
-                      : 'bg-white border-gray-100 hover:border-gray-300 hover:shadow-xs'
-                  }`}
-                >
-                  <div className="w-14 h-14 rounded-full bg-white p-1 border border-gray-200 shadow-xs mb-2 group-hover:scale-108 transition-transform flex items-center justify-center overflow-hidden">
-                    <img src={cat.icon} alt={cat.name} className="w-full h-full object-contain" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-900 group-hover:text-[#064E3B] transition-colors line-clamp-1">
-                    {cat.name}
-                  </span>
-                  <span className="text-[10px] text-gray-400 mt-0.5 font-medium">
-                    {cat.count} Items
-                  </span>
-                </button>
-              ))}
-            </div>
-
-            {/* EXPANDABLE VISUAL FAVICON DIRECTORY (ALL 72 ITEMS) */}
-            {showFaviconIndex && (
-              <div className="mt-8 pt-8 border-t border-gray-200 animate-in fade-in slide-in-from-top-4 duration-300">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-                  <div>
-                    <h4 className="font-serif font-black text-xl text-gray-900">
-                      Complete Product Favicon Index (All 72 Items)
-                    </h4>
-                    <p className="text-xs text-gray-500">
-                      Every single product image favicon listed. Click any favicon to view item details and add to bag.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-3 py-1 bg-emerald-100 text-[#064E3B] rounded-full">
-                      72 Favicons Loaded
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-12 gap-3 max-h-[500px] overflow-y-auto p-3 bg-[#FAF7F2] rounded-2xl border border-gray-200">
-                  {products.map(prod => {
-                    const favFile = `/favicons/fav_${prod.image.split('/').pop().replace('.png', '')}.png`;
-                    return (
-                      <div
-                        key={prod.id}
-                        onClick={() => onQuickView(prod)}
-                        className="group relative flex flex-col items-center bg-white p-2.5 rounded-xl border border-gray-200 hover:border-[#064E3B] hover:shadow-md cursor-pointer transition-all duration-200 text-center"
-                        title={`${prod.name} (₹${prod.price}) - Click to preview`}
-                      >
-                        <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-1 overflow-hidden mb-1.5 group-hover:scale-110 transition-transform">
-                          <img
-                            src={favFile}
-                            alt={prod.name}
-                            className="w-full h-full object-contain"
-                            onError={(e) => { e.target.src = prod.image; }}
-                          />
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-900 line-clamp-1 w-full group-hover:text-[#064E3B]">
-                          {prod.name}
-                        </span>
-                        <span className="text-[10px] font-black text-[#064E3B] mt-0.5">
-                          ₹{prod.price}
-                        </span>
-                        <span className="text-[8px] font-mono text-gray-400 uppercase">
-                          {prod.sku.split('-')[1]}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 4. NEW ARRIVALS (Sikar Season Shop Authentic Collections)     */}
-        {/* ============================================================== */}
-        <section id="new-arrivals-section" className="py-20 px-4 max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-serif">
-              New Arrivals
-            </h2>
-            <p className="text-xs md:text-sm text-gray-500 leading-relaxed">
-              Explore our authentic Sikar collections — handcrafted Rajasthani Lac bangles, pure Kashmiri Pashmina shawls, luxury bridal cosmetics, premium winter thermals, socks, and artisan brass showpieces.
-            </p>
           </div>
 
-          {/* Filter Pills / Tabs for all Sikar Season Shop Categories */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-10 text-xs font-bold">
+          {/* Filter Pills / Tabs */}
+          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none text-xs font-bold">
             <button
               onClick={() => { setSelectedCategory('all'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
+              className={`px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                 selectedCategory === 'all'
-                  ? 'bg-gray-900 text-white border-gray-900 shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-900'
+                  ? 'bg-[#064E3B] text-white shadow-xs'
+                  : 'bg-white text-gray-700 border border-[#EDE4D3] hover:border-[#064E3B]'
               }`}
             >
-              All Arrivals ({products.length})
+              All Items ({products.length})
             </button>
-            <button
-              onClick={() => { setSelectedCategory('cosmetics'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'cosmetics'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Ladies Cosmetics (12)
-            </button>
-            <button
-              onClick={() => { setSelectedCategory('bangles'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'bangles'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Royal Bangles (12)
-            </button>
-            <button
-              onClick={() => { setSelectedCategory('socks'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'socks'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Cashmere Socks (12)
-            </button>
-            <button
-              onClick={() => { setSelectedCategory('undergarments'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'undergarments'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Unisex Undergarments (12)
-            </button>
-            <button
-              onClick={() => { setSelectedCategory('showpieces'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'showpieces'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Showpieces &amp; Gifts (12)
-            </button>
-            <button
-              onClick={() => { setSelectedCategory('shawls'); setDisplayLimit(12); }}
-              className={`px-4 py-2 rounded-full border transition-all ${
-                selectedCategory === 'shawls'
-                  ? 'bg-[#064E3B] text-white border-[#064E3B] shadow-xs'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-[#064E3B]'
-              }`}
-            >
-              Winter Shawls (12)
-            </button>
+            {categories.filter(c => c.id !== 'all').map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => { setSelectedCategory(cat.id); setDisplayLimit(12); }}
+                className={`px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                  selectedCategory === cat.id
+                    ? 'bg-[#064E3B] text-white shadow-xs'
+                    : 'bg-white text-gray-700 border border-[#EDE4D3] hover:border-[#064E3B]'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
           </div>
 
-          {/* Product Grid (4 items per row responsive studio layout) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-7">
+          {/* ============================================================== */}
+          {/* PRODUCT GRID: 2 COLUMNS ON MOBILE (grid-cols-2)               */}
+          {/* ============================================================== */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5">
             {filteredProducts.slice(0, displayLimit).map((item) => {
               const isWishlisted = wishlistItems.some(i => i.id === item.id);
 
               return (
-                <div key={item.id} className="group relative flex flex-col justify-between">
-                  
-                  {/* Image Card Canvas (Pure White Background merging seamlessly) */}
-                  <div className="relative w-full aspect-square bg-[#FFFFFF] rounded-xl overflow-hidden p-6 flex items-center justify-center transition-all duration-300 group-hover:shadow-lg border border-gray-100">
+                <div
+                  key={item.id}
+                  className="group relative flex flex-col justify-between bg-white rounded-2xl p-2.5 sm:p-4 border border-[#EDE4D3] shadow-xs hover:shadow-lg hover:border-[#064E3B]/30 transition-all duration-300"
+                >
+                  {/* Top Image Container */}
+                  <div className="relative w-full aspect-square bg-[#FFFFFF] rounded-xl overflow-hidden p-2 sm:p-4 flex items-center justify-center">
                     <img
                       src={item.image}
                       alt={item.name}
@@ -993,70 +852,91 @@ export default function Storefront({
                       }}
                     />
 
-                    {/* Right-Side Hover Action Rail (Quick actions: Wishlist, Quick View, Cart) */}
-                    <div className="absolute right-3 top-0 bottom-0 flex flex-col justify-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-20">
-                      <button
-                        onClick={() => onToggleWishlist(item)}
-                        className={`w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center transition-all hover:scale-110 ${
-                          isWishlisted ? 'text-rose-600' : 'text-gray-500 hover:text-rose-600'
-                        }`}
-                        title="Add to Wishlist"
-                      >
-                        <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-current' : ''}`} />
-                      </button>
+                    {/* Badge: Discount or Tag */}
+                    {item.discount > 0 && (
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-[#FF7722] text-white text-[9px] sm:text-[10px] font-black uppercase shadow-xs">
+                        {item.discount}% OFF
+                      </div>
+                    )}
 
-                      <button
-                        onClick={() => onQuickView(item)}
-                        className="w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center text-gray-500 hover:text-gray-900 transition-all hover:scale-110"
-                        title="Quick View Modal"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
+                    {/* Wishlist Heart Icon (Always accessible on Mobile & Desktop) */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleWishlist(item);
+                      }}
+                      className={`absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/90 backdrop-blur-xs shadow-xs flex items-center justify-center transition-all hover:scale-110 cursor-pointer ${
+                        isWishlisted ? 'text-rose-600' : 'text-gray-400 hover:text-rose-600'
+                      }`}
+                      title="Add to Wishlist"
+                      aria-label="Wishlist"
+                    >
+                      <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-current' : ''}`} />
+                    </button>
 
-                      <button
-                        onClick={() => onAddToCart(item, 1)}
-                        className="w-9 h-9 rounded-full bg-[#064E3B] text-white shadow-md flex items-center justify-center hover:bg-[#043828] transition-all hover:scale-110"
-                        title="Add to Cart"
-                      >
-                        <ShoppingBag className="w-4 h-4 text-[#FF7722]" />
-                      </button>
-                    </div>
+                    {/* Quick View Button (Desktop hover) */}
+                    <button
+                      onClick={() => onQuickView(item)}
+                      className="hidden sm:flex absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 bg-white/90 backdrop-blur-xs text-gray-800 rounded-full text-[10px] font-bold shadow-xs items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Eye className="w-3 h-3" />
+                      <span>Quick View</span>
+                    </button>
                   </div>
 
-                  {/* Product Metadata */}
-                  <div className="pt-3">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <img
-                        src={`/favicons/fav_${item.image.split('/').pop().replace('.png', '')}.png`}
-                        alt=""
-                        className="w-4 h-4 rounded-xs border border-gray-200 object-contain flex-shrink-0"
-                        onError={(e) => { e.target.style.display = 'none'; }}
-                      />
-                      <span className="text-[11px] text-gray-500 uppercase tracking-wider block">
+                  {/* Product Details */}
+                  <div className="pt-2.5 sm:pt-3 flex flex-col flex-1 justify-between">
+                    <div>
+                      <span className="text-[9.5px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
                         {item.categoryLabel}
                       </span>
+                      <h3
+                        onClick={() => onQuickView(item)}
+                        className="font-bold text-xs sm:text-sm text-gray-900 mt-0.5 line-clamp-2 hover:text-[#064E3B] transition-colors cursor-pointer leading-snug"
+                        title={item.name}
+                      >
+                        {item.name}
+                      </h3>
                     </div>
-                    <h3
-                      onClick={() => onQuickView(item)}
-                      className="font-bold text-sm text-gray-900 mt-1 line-clamp-1 hover:text-[#064E3B] transition-colors cursor-pointer font-serif"
-                    >
-                      {item.name}
-                    </h3>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="font-bold text-sm text-gray-900">
-                        ₹{item.price}
-                      </span>
-                      {item.mrp > item.price && (
-                        <span className="text-xs text-gray-400 line-through">
-                          ₹{item.mrp}
+
+                    {/* Rating and Price */}
+                    <div className="mt-2 pt-2 border-t border-gray-100 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between">
+                        {/* Rating */}
+                        <div className="flex items-center gap-1 text-[10px] sm:text-xs font-bold text-gray-700">
+                          <Star className="w-3 h-3 fill-[#FF7722] text-[#FF7722]" />
+                          <span>{item.rating}</span>
+                          <span className="text-gray-400 text-[9px] hidden sm:inline">({item.reviewsCount})</span>
+                        </div>
+
+                        {/* Stock status indicator */}
+                        <span className="text-[9px] font-semibold text-emerald-700">
+                          In Stock
                         </span>
-                      )}
-                      {item.discount > 0 && (
-                        <span className="text-[10px] text-emerald-700 font-bold ml-auto">
-                          {item.discount}% OFF
+                      </div>
+
+                      {/* Pricing row */}
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="font-bold text-sm sm:text-base text-[#064E3B] font-serif">
+                          ₹{item.price}
                         </span>
-                      )}
+                        {item.mrp > item.price && (
+                          <span className="text-[10px] sm:text-xs text-gray-400 line-through">
+                            ₹{item.mrp}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* 1-Tap Add to Cart Button */}
+                      <button
+                        onClick={() => onAddToCart(item, 1)}
+                        className="w-full mt-1 py-1.5 sm:py-2 bg-[#064E3B] hover:bg-[#043828] text-white rounded-xl text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs transition-all hover:scale-102 cursor-pointer active:scale-95"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#FF7722]" />
+                        <span>Add to Bag</span>
+                      </button>
                     </div>
+
                   </div>
                 </div>
               );
@@ -1065,433 +945,197 @@ export default function Storefront({
 
           {/* View More / Load More Button */}
           {filteredProducts.length > displayLimit ? (
-            <div className="text-center mt-12">
+            <div className="text-center mt-10">
               <button
                 onClick={() => setDisplayLimit(prev => prev + 12)}
-                className="px-8 py-3.5 border-2 border-gray-900 hover:bg-gray-900 hover:text-white text-gray-900 text-xs font-bold uppercase tracking-widest transition-all rounded-md shadow-xs inline-flex items-center gap-2"
+                className="px-8 py-3.5 bg-white border-2 border-[#064E3B] hover:bg-[#064E3B] hover:text-white text-[#064E3B] text-xs font-bold uppercase tracking-widest transition-all rounded-2xl shadow-xs inline-flex items-center gap-2 cursor-pointer"
               >
                 <span>View More Products</span>
                 <span className="text-xs text-[#FF7722] font-mono">({Math.min(displayLimit, filteredProducts.length)} / {filteredProducts.length})</span>
               </button>
             </div>
           ) : filteredProducts.length > 12 && (
-            <div className="text-center mt-10 text-xs text-gray-400 font-semibold uppercase tracking-wider">
+            <div className="text-center mt-8 text-xs text-gray-400 font-semibold uppercase tracking-wider">
               Showing all {filteredProducts.length} products
             </div>
           )}
+
         </section>
 
         {/* ============================================================== */}
-        {/* 5. NEWS AND INSPIRATION COUNTDOWN PROMO (BRIDAL & WINTER HAMPER) */}
+        {/* 7. SERVICE & TRUST HIGHLIGHTS                                  */}
         {/* ============================================================== */}
-        <section className="relative py-16 sm:py-20 bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5F1EA] overflow-hidden border-y border-amber-100/60">
-          <div className="max-w-7xl mx-auto px-6 sm:px-12 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-              
-              {/* Left Column: Hamper Details & Countdown */}
-              <div className="lg:col-span-5 space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100/70 border border-amber-200">
-                  <span className="w-2 h-2 rounded-full bg-[#FF7722] animate-pulse" />
-                  <span className="text-[11px] font-bold tracking-[0.2em] text-[#FF7722] uppercase">
-                    Festive Season Special
-                  </span>
-                </div>
-
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-950 uppercase tracking-tight font-serif leading-tight">
-                  Bridal &amp; Winter <span className="text-[#064E3B]">Hamper</span>
-                </h2>
-
-                {/* Accent colored stroke */}
-                <div className="w-16 h-1.5 bg-[#064E3B] rounded-full my-2" />
-
-                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-                  Limited festive edition pairing authentic Kashmiri Pashmina, handcrafted Lac Chudha, and 24K Gold bridal radiance cosmetics in a royal gift presentation.
-                </p>
-
-                {/* 3-in-1 Hamper Inclusions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1 pb-2">
-                  <div className="p-2.5 rounded-lg bg-white border border-gray-100 shadow-2xs flex flex-col items-center text-center">
-                    <Feather className="w-5 h-5 text-[#064E3B]" />
-                    <span className="text-[11px] font-bold text-gray-900 mt-1">Kashmiri Shawl</span>
-                    <span className="text-[9px] text-gray-500">Pure Pashmina</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-white border border-gray-100 shadow-2xs flex flex-col items-center text-center">
-                    <Gem className="w-5 h-5 text-[#FF7722]" />
-                    <span className="text-[11px] font-bold text-gray-900 mt-1">Lac Chudha</span>
-                    <span className="text-[9px] text-gray-500">24K Jadau Kundan</span>
-                  </div>
-                  <div className="p-2.5 rounded-lg bg-white border border-gray-100 shadow-2xs flex flex-col items-center text-center">
-                    <Sparkles className="w-5 h-5 text-amber-500" />
-                    <span className="text-[11px] font-bold text-gray-900 mt-1">24K Cosmetics</span>
-                    <span className="text-[9px] text-gray-500">Bridal Radiance</span>
-                  </div>
-                </div>
-
-                {/* Live Countdown Indication Blocks */}
-                <div className="pt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-2">
-                    Deal Expires In:
-                  </span>
-                  <div className="flex gap-2.5">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 border border-gray-200 rounded-lg flex flex-col items-center justify-center bg-white shadow-xs">
-                      <span className="font-bold text-base sm:text-lg text-[#064E3B]">{timeLeft.days}</span>
-                      <span className="text-[9px] text-gray-500 uppercase font-semibold">days</span>
-                    </div>
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 border border-gray-200 rounded-lg flex flex-col items-center justify-center bg-white shadow-xs">
-                      <span className="font-bold text-base sm:text-lg text-[#064E3B]">{String(timeLeft.hours).padStart(2, '0')}</span>
-                      <span className="text-[9px] text-gray-500 uppercase font-semibold">hours</span>
-                    </div>
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 border border-gray-200 rounded-lg flex flex-col items-center justify-center bg-white shadow-xs">
-                      <span className="font-bold text-base sm:text-lg text-[#064E3B]">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                      <span className="text-[9px] text-gray-500 uppercase font-semibold">mins</span>
-                    </div>
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 border border-amber-300 rounded-lg flex flex-col items-center justify-center bg-amber-50/50 shadow-xs">
-                      <span className="font-bold text-base sm:text-lg text-[#FF7722]">{String(timeLeft.seconds).padStart(2, '0')}</span>
-                      <span className="text-[9px] text-gray-500 uppercase font-semibold">secs</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pricing & CTA Button */}
-                <div className="pt-4 flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-baseline gap-3">
-                    <del className="text-lg sm:text-xl text-gray-400 font-semibold">₹ 3,999</del>
-                    <span className="text-3xl sm:text-4xl font-extrabold text-[#064E3B] font-serif">₹ 1,999</span>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-[#064E3B] text-[11px] font-bold rounded uppercase">Save 50%</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setSelectedCategory('all');
-                      document.getElementById('new-arrivals-section')?.scrollIntoView({ behavior: 'smooth' });
-                    }}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#064E3B] hover:bg-[#043327] text-white font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer"
-                  >
-                    <span>Claim Bridal Hamper</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
+        <section className="border-y border-[#EDE4D3] py-10 sm:py-14 px-4 bg-white/70">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+            <div className="flex items-center gap-4 justify-start p-4 rounded-2xl bg-[#FAF7F2] border border-[#EDE4D3]">
+              <div className="w-12 h-12 rounded-2xl bg-[#064E3B]/10 text-[#064E3B] flex items-center justify-center flex-shrink-0">
+                <Truck className="w-6 h-6" />
               </div>
-
-              {/* Right Column: Authentic Bridal & Winter Hamper 3-in-1 Visual */}
-              <div className="lg:col-span-7 flex items-center justify-center relative">
-                <div className="relative w-full max-w-xl group">
-                  <img
-                    src="/images/e-commerce/home/promo.png"
-                    alt="Sikar Season Authentic Bridal & Winter Hamper (Kashmiri Pashmina, Rajasthani Lac Chuda, 24K Bridal Cosmetics)"
-                    className="w-full h-auto object-contain drop-shadow-xl transition-transform duration-500 group-hover:scale-[1.01]"
-                  />
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 6. TOP SELLING PRODUCTS (Sikar Season Shop Royal Collections)  */}
-        {/* ============================================================== */}
-        <section id="top-selling-section" className="py-20 px-4 max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-serif">
-              Top Selling Products
-            </h2>
-            <p className="text-xs md:text-sm text-gray-500 leading-relaxed">
-              Experience handcrafted Rajasthani heritage bangles, pure Kashmiri pashmina, and luxury bridal essentials curated exclusively by Sikar Season Shop.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Left Big Full-Height Card: top1.jpg (Royal Bridal Bangles) */}
-            <div
-              onClick={() => onQuickView(products[12] || products[1])}
-              className="lg:col-span-6 min-h-[440px] rounded-2xl bg-cover bg-center p-8 md:p-12 flex flex-col justify-start cursor-pointer transition-transform duration-300 hover:scale-[1.01] shadow-sm relative group overflow-hidden"
-              style={{ backgroundImage: `url('/images/e-commerce/home/top1.jpg')` }}
-            >
-              <div className="relative z-10 space-y-1">
-                <span className="text-xs font-bold uppercase tracking-widest text-[#FF7722]">Heritage Craft</span>
-                <h3 className="text-2xl md:text-3xl font-black text-gray-900 font-serif">ROYAL BRIDAL BANGLES</h3>
-                <div className="w-10 h-1 bg-[#064E3B] rounded my-2" />
-                <p className="text-xs font-semibold text-gray-600">Save up to 40% on Handcrafted Lac Sets</p>
-              </div>
-            </div>
-
-            {/* Right 4 Banner Tiles Grid */}
-            <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-6">
-              
-              {/* top2.jpg: Kashmiri Pashmina Shawls */}
-              <div
-                onClick={() => onQuickView(products[60] || products[2])}
-                className="h-[210px] rounded-2xl bg-cover bg-center p-6 flex flex-col justify-between text-right cursor-pointer shadow-sm hover:scale-[1.02] transition-transform"
-                style={{ backgroundImage: `url('/images/e-commerce/home/top2.jpg')` }}
-              >
-                <div>
-                  <h4 className="text-xs font-bold text-[#064E3B] uppercase tracking-wider">Kashmiri Pashmina</h4>
-                  <p className="text-xs font-bold text-gray-900 underline mt-1">explore shawls</p>
-                </div>
-              </div>
-
-              {/* top4.jpg: Winter Thermals & Socks */}
-              <div
-                onClick={() => onQuickView(products[24] || products[3])}
-                className="h-[210px] rounded-2xl bg-cover bg-center p-6 flex flex-col justify-end cursor-pointer shadow-sm hover:scale-[1.02] transition-transform"
-                style={{ backgroundImage: `url('/images/e-commerce/home/top4.jpg')` }}
-              >
-                <span className="self-start px-3 py-1 bg-gray-900/80 text-white text-[11px] font-bold uppercase tracking-wider rounded">
-                  Winter Thermals &amp; Socks
-                </span>
-              </div>
-
-              {/* top3.jpg: Luxury 24K Gold Cosmetics */}
-              <div
-                onClick={() => onQuickView(products[0])}
-                className="h-[210px] rounded-2xl bg-cover bg-center p-6 flex flex-col justify-end cursor-pointer shadow-sm hover:scale-[1.02] transition-transform"
-                style={{ backgroundImage: `url('/images/e-commerce/home/top3.jpg')` }}
-              >
-                <span className="self-start px-3 py-1 bg-[#FF7722] text-white text-[11px] font-bold uppercase tracking-wider rounded">
-                  70% FESTIVE SALE
-                </span>
-              </div>
-
-              {/* top5.jpg: Handcrafted Brass Idols & Gifts */}
-              <div
-                onClick={() => onQuickView(products[48] || products[5])}
-                className="h-[210px] rounded-2xl bg-cover bg-center p-6 flex flex-col justify-center text-center cursor-pointer shadow-sm hover:scale-[1.02] transition-transform"
-                style={{ backgroundImage: `url('/images/e-commerce/home/top5.jpg')` }}
-              >
-                <div className="w-8 h-0.5 bg-[#064E3B] mx-auto mb-1" />
-                <p className="text-[11px] text-gray-700 uppercase tracking-widest">Handcrafted</p>
-                <h4 className="text-base font-black text-[#064E3B] uppercase tracking-wider font-serif">BRASS IDOLS</h4>
-                <div className="w-8 h-0.5 bg-[#064E3B] mx-auto mt-1" />
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 7. INFOBLOCK (Sikar Season Shop Service Commitments)           */}
-        {/* ============================================================== */}
-        <section className="border-y border-gray-200 py-12 px-4 bg-white">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <img src="/images/e-commerce/home/car.svg" alt="Free Shipping" className="w-10 h-10 object-contain" />
               <div>
-                <h4 className="text-xs md:text-sm font-bold uppercase text-gray-900 tracking-wider">Free Shipping</h4>
-                <p className="text-xs text-gray-500">On all orders above ₹499 across Sikar &amp; Rajasthan</p>
+                <h3 className="text-xs sm:text-sm font-bold uppercase text-gray-900 tracking-wider">Free Sikar Delivery</h3>
+                <p className="text-xs text-gray-500 mt-0.5">On all orders above ₹499 across Sikar &amp; Rajasthan</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <img src="/images/e-commerce/home/headphones.svg" alt="24/7 Support" className="w-10 h-10 object-contain" />
+            <div className="flex items-center gap-4 justify-start p-4 rounded-2xl bg-[#FAF7F2] border border-[#EDE4D3]">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF7722]/10 text-[#FF7722] flex items-center justify-center flex-shrink-0">
+                <Phone className="w-6 h-6" />
+              </div>
               <div>
-                <h4 className="text-xs md:text-sm font-bold uppercase text-gray-900 tracking-wider">Store Support</h4>
-                <p className="text-xs text-gray-500">Pooja Sharma (9602172335) • Priyanshu (+91 8306447955)</p>
+                <h3 className="text-xs sm:text-sm font-bold uppercase text-gray-900 tracking-wider">Direct Store Support</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Pooja Sharma (9602172335) • Priyanshu (+91 8306447955)</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 justify-center md:justify-start">
-              <img src="/images/e-commerce/home/Sync.svg" alt="100% Money Back" className="w-10 h-10 object-contain" />
+            <div className="flex items-center gap-4 justify-start p-4 rounded-2xl bg-[#FAF7F2] border border-[#EDE4D3]">
+              <div className="w-12 h-12 rounded-2xl bg-[#064E3B]/10 text-[#064E3B] flex items-center justify-center flex-shrink-0">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
               <div>
-                <h4 className="text-xs md:text-sm font-bold uppercase text-gray-900 tracking-wider">100% Authentic Quality</h4>
-                <p className="text-xs text-gray-500">Guaranteed genuine heritage products &amp; instant exchange</p>
+                <h3 className="text-xs sm:text-sm font-bold uppercase text-gray-900 tracking-wider">100% Authentic Quality</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Handloom Pashmina, Lac Kadas &amp; Certified Ayurveda</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* ============================================================== */}
-        {/* 8. FROM OUR BLOGS (Sikar Season Shop Heritage & Style Journals)*/}
+        {/* 8. FOOTER WITH BRAND, STORE CONTACTS & POS LAUNCH             */}
         {/* ============================================================== */}
-        <section id="blogs" className="py-20 px-4 max-w-7xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-serif">
-              From Our Blogs
-            </h2>
-            <p className="text-xs md:text-sm text-gray-500 leading-relaxed">
-              Stories of traditional Rajasthani craftsmanship, authentic Kashmiri looms, and natural bridal beauty wisdom.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Article 1 */}
-            <div className="flex flex-col items-center text-center group cursor-pointer">
-              <div className="w-full aspect-4/3 rounded-xl overflow-hidden mb-4">
-                <img
-                  src="/images/e-commerce/home/article1.jpg"
-                  alt="The Art of Rajasthani Lac Chudha"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <span className="text-xs text-gray-400">Heritage &amp; Culture</span>
-              <h4 className="font-bold text-base text-gray-900 mt-1 mb-2 font-serif group-hover:text-[#064E3B] transition-colors">
-                The Art of Rajasthani Lac Chudha: Handcrafting Royal Elegance
-              </h4>
-              <span className="text-xs font-bold text-[#FF7722] group-hover:underline">
-                Read More
-              </span>
-            </div>
-
-            {/* Article 2 */}
-            <div className="flex flex-col items-center text-center group cursor-pointer">
-              <div className="w-full aspect-4/3 rounded-xl overflow-hidden mb-4">
-                <img
-                  src="/images/e-commerce/home/article2.jpg"
-                  alt="How to Identify Pure Kashmiri Pashmina"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <span className="text-xs text-gray-400">Fabrics &amp; Weaving</span>
-              <h4 className="font-bold text-base text-gray-900 mt-1 mb-2 font-serif group-hover:text-[#064E3B] transition-colors">
-                How to Identify Pure Kashmiri Pashmina: The Weaver's Test
-              </h4>
-              <span className="text-xs font-bold text-[#FF7722] group-hover:underline">
-                Read More
-              </span>
-            </div>
-
-            {/* Article 3 */}
-            <div className="flex flex-col items-center text-center group cursor-pointer">
-              <div className="w-full aspect-4/3 rounded-xl overflow-hidden mb-4">
-                <img
-                  src="/images/e-commerce/home/article3.jpg"
-                  alt="Winter Bridal Glow with Kumkumadi Saffron"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-              </div>
-              <span className="text-xs text-gray-400">Beauty &amp; Radiance</span>
-              <h4 className="font-bold text-base text-gray-900 mt-1 mb-2 font-serif group-hover:text-[#064E3B] transition-colors">
-                Winter Bridal Glow: Ancient Ayurvedic Kumkumadi Saffron Secrets
-              </h4>
-              <span className="text-xs font-bold text-[#FF7722] group-hover:underline">
-                Read More
-              </span>
-            </div>
-          </div>
-
-          <div className="text-center mt-10">
-            <button className="px-8 py-3 border border-gray-900 hover:bg-gray-900 hover:text-white text-gray-900 text-xs font-bold uppercase tracking-widest transition-colors">
-              View More
-            </button>
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 9. FOLLOW US ON INSTAGRAM (Exact 6-Column Grid)                 */}
-        {/* ============================================================== */}
-        <section className="pt-10 pb-16">
-          <h3 className="text-center font-bold text-xl md:text-2xl text-gray-900 mb-8 font-serif">
-            Follow us on Instagram
-          </h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-0">
-            {['insta1.jpg', 'insta2.jpg', 'insta3.jpg', 'insta4.jpg', 'insta5.jpg', 'insta6.jpg'].map((img, i) => (
-              <div key={i} className="relative aspect-square overflow-hidden group cursor-pointer">
-                <img
-                  src={`/images/e-commerce/home/${img}`}
-                  alt="Instagram Feed"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <Camera className="w-6 h-6" />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ============================================================== */}
-        {/* 10. SIKAR SEASON SHOP FOOTER & MALL FRANCHISE STORE DETAILS   */}
-        {/* ============================================================== */}
-        <footer id="contact" className="bg-[#1F2937] text-white pt-16 pb-8 px-6">
+        <footer id="contact" className="bg-[#032D22] text-white pt-14 pb-12 px-4 sm:px-6 lg:px-8 border-t-2 border-[#FF7722]">
           <div className="max-w-7xl mx-auto">
-            {/* Newsletter Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center pb-12 border-b border-gray-700">
-              <div className="lg:col-span-5">
-                <h4 className="text-base font-bold text-white mb-2">Subscribe to Sikar Season Newsletter</h4>
-                <p className="text-xs text-gray-400 leading-relaxed">
-                  Stay updated with exclusive wedding season offers, bridal collection launches, and festival specials directly in your inbox.
-                </p>
-              </div>
-
-              <div className="lg:col-span-7 flex flex-col sm:flex-row gap-2">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 bg-white text-gray-900 text-xs rounded-none focus:outline-none"
-                />
-                <button className="px-8 py-3 bg-[#FF7722] hover:bg-[#D95305] text-white text-xs font-bold uppercase tracking-wider transition-colors">
-                  Subscribe
-                </button>
-              </div>
-            </div>
-
+            
             {/* Links Columns */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 py-12 border-b border-gray-700 text-xs text-gray-400">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 pb-12 border-b border-emerald-900/60 text-xs text-emerald-100">
               {/* Brand info */}
-              <div className="md:col-span-4 space-y-4">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-[#064E3B] text-[#FF7722] font-serif font-black text-xs flex items-center justify-center border border-[#FF7722]">
-                    SSS
-                  </div>
-                  <span className="font-serif font-black text-2xl tracking-tight text-white">
-                    SIKAR SEASON<span className="text-[#FF7722]">.</span>
-                  </span>
-                </div>
-                <p className="leading-relaxed">
-                  Official retail storefront and mall franchise billing platform for <strong>{storeInfo.name}</strong>. Delivering handcrafted Rajasthani bridal bangles, luxury cosmetics, pure Kashmiri pashmina, socks, unisex undergarments, and artisan brass showpieces.
+              <div className="md:col-span-5 space-y-4">
+                <Logo variant="full" size="lg" theme="light" />
+                <p className="text-xs text-emerald-200/90 leading-relaxed max-w-sm mt-3">
+                  Official retail storefront and mall franchise billing platform for <strong>{storeInfo.name}</strong>. Delivering handcrafted Rajasthani bridal bangles, luxury cosmetics, pure Kashmiri pashmina, socks, innerwear, and artisan brass showpieces.
                 </p>
-                <div className="pt-2 text-white font-medium space-y-1">
-                  <p>Pooja Sharma (Owner): <strong>{storeInfo.ownerPhone}</strong></p>
-                  <p>Priyanshu Sharma: <strong>{storeInfo.managerPhone}</strong></p>
+                <div className="pt-2 text-white font-medium space-y-1 text-xs">
+                  <p>Store Owner: <strong>Pooja Sharma ({storeInfo.ownerPhone})</strong></p>
+                  <p>Franchise Head: <strong>Priyanshu Sharma ({storeInfo.managerPhone})</strong></p>
                   <p>Email: <strong>{storeInfo.email}</strong></p>
                 </div>
               </div>
 
-              {/* Company */}
-              <div className="md:col-span-2 space-y-2.5">
-                <h5 className="font-bold text-xs uppercase tracking-wider text-white mb-3">Company</h5>
-                <p className="hover:text-white cursor-pointer">About Sikar Season</p>
-                <p className="hover:text-white cursor-pointer">Heritage Craft</p>
-                <p className="hover:text-white cursor-pointer">Latest Journals</p>
-                <p className="hover:text-white cursor-pointer">FAQs</p>
+              {/* Collections Quick Links */}
+              <div className="md:col-span-3 space-y-2.5">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[#FFE082] mb-3 font-serif">
+                  Collections
+                </h4>
+                {categories.filter(c => c.id !== 'all').map(cat => (
+                  <p
+                    key={cat.id}
+                    onClick={() => {
+                      setSelectedCategory(cat.id);
+                      document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="hover:text-white cursor-pointer transition-colors"
+                  >
+                    {cat.name}
+                  </p>
+                ))}
               </div>
 
-              {/* My Account */}
-              <div className="md:col-span-2 space-y-2.5">
-                <h5 className="font-bold text-xs uppercase tracking-wider text-white mb-3">My Account</h5>
-                <p className="hover:text-white cursor-pointer">Customer Login</p>
-                <p onClick={onOpenCart} className="hover:text-white cursor-pointer">View Shopping Bag</p>
-                <p className="hover:text-white cursor-pointer">Order Tracking</p>
-                <p className="hover:text-white cursor-pointer">Help &amp; Support</p>
-              </div>
-
-              {/* Customer Service */}
+              {/* Store & POS Location */}
               <div className="md:col-span-4 space-y-2.5">
-                <h5 className="font-bold text-xs uppercase tracking-wider text-white mb-3">Store &amp; POS Location</h5>
-                <p className="hover:text-white cursor-pointer">Station Road, Main Market, Sikar, Rajasthan - 332001</p>
-                <p className="hover:text-white cursor-pointer">GSTIN: {storeInfo.gstin}</p>
-                <p className="hover:text-white cursor-pointer">Store Hours: Mon – Sun: 09:30 AM – 10:00 PM</p>
+                <h4 className="font-bold text-xs uppercase tracking-wider text-[#FFE082] mb-3 font-serif">
+                  Store &amp; POS Location
+                </h4>
+                <p className="text-emerald-100 flex items-start gap-2">
+                  <MapPin className="w-4 h-4 text-[#FF7722] flex-shrink-0 mt-0.5" />
+                  <span>Station Road, Main Market, Sikar, Rajasthan - 332001</span>
+                </p>
+                <p className="text-emerald-200">GSTIN: {storeInfo.gstin}</p>
+                <p className="text-emerald-200">Store Hours: Mon – Sun: 09:30 AM – 10:00 PM</p>
+                
                 <button
                   onClick={onSwitchToPos}
-                  className="mt-3 px-4 py-2 bg-[#064E3B] hover:bg-[#043828] text-white text-xs font-bold rounded-lg flex items-center gap-2"
+                  className="mt-4 px-5 py-3 bg-[#FF7722] hover:bg-[#D95305] text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-md transition-all cursor-pointer"
                 >
-                  <Store className="w-3.5 h-3.5 text-[#FF7722]" />
+                  <Store className="w-4 h-4" />
                   Launch Mall Franchise POS
                 </button>
               </div>
             </div>
 
             {/* Copyright */}
-            <div className="pt-6 flex flex-wrap items-center justify-between text-xs text-gray-500">
+            <div className="pt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-emerald-300/70">
               <p>© {new Date().getFullYear()} SIKAR SEASON SHOP. All Rights Reserved. Owner: Pooja Sharma ({storeInfo.ownerPhone})</p>
-              <div className="flex gap-4">
-                <span className="hover:text-gray-300 cursor-pointer">Privacy Policy</span>
+              <div className="flex items-center gap-4">
+                <span>Station Road • Sikar • Rajasthan</span>
                 <span>•</span>
-                <span className="hover:text-gray-300 cursor-pointer">Terms &amp; GST Compliance</span>
+                <span>GST Verified</span>
               </div>
             </div>
+
           </div>
         </footer>
+
       </main>
+
+      {/* ============================================================== */}
+      {/* 9. MOBILE STICKY BOTTOM NAVIGATION BAR                         */}
+      {/* ============================================================== */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-lg border-t border-[#EDE4D3] py-2 px-3 shadow-lg flex items-center justify-around">
+        <button
+          onClick={() => {
+            setSelectedCategory('all');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="flex flex-col items-center gap-0.5 text-gray-700 hover:text-[#064E3B]"
+        >
+          <CircleDot className="w-5 h-5 text-[#064E3B]" />
+          <span className="text-[10px] font-bold">Home</span>
+        </button>
+
+        <button
+          onClick={() => document.getElementById('shop-catalog')?.scrollIntoView({ behavior: 'smooth' })}
+          className="flex flex-col items-center gap-0.5 text-gray-700 hover:text-[#064E3B]"
+        >
+          <Tag className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Shop</span>
+        </button>
+
+        <button
+          onClick={onOpenWishlist}
+          className="relative flex flex-col items-center gap-0.5 text-gray-700 hover:text-rose-600"
+        >
+          <Heart className="w-5 h-5" />
+          {wishlistItems.length > 0 && (
+            <span className="absolute -top-1 right-2 w-3.5 h-3.5 rounded-full bg-rose-600 text-white text-[8px] font-black flex items-center justify-center">
+              {wishlistItems.length}
+            </span>
+          )}
+          <span className="text-[10px] font-bold">Wishlist</span>
+        </button>
+
+        <button
+          onClick={onOpenCart}
+          className="relative flex flex-col items-center gap-0.5 text-gray-700 hover:text-[#064E3B]"
+        >
+          <ShoppingBag className="w-5 h-5" />
+          {totalCartUnits > 0 && (
+            <span className="absolute -top-1 right-1 w-3.5 h-3.5 rounded-full bg-[#FF7722] text-white text-[8px] font-black flex items-center justify-center">
+              {totalCartUnits}
+            </span>
+          )}
+          <span className="text-[10px] font-bold">Bag</span>
+        </button>
+
+        <button
+          onClick={onSwitchToPos}
+          className="flex flex-col items-center gap-0.5 text-[#064E3B] font-bold"
+        >
+          <div className="w-6 h-6 rounded-lg bg-[#064E3B] text-[#FF7722] flex items-center justify-center shadow-xs">
+            <Store className="w-3.5 h-3.5" />
+          </div>
+          <span className="text-[10px] text-[#064E3B]">POS</span>
+        </button>
+      </nav>
+
     </div>
   );
 }

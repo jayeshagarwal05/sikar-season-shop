@@ -109,7 +109,7 @@ export default function App() {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[#FAF7F2] text-[#1F2937]">
       {/* View Switcher: Storefront vs Mall Franchise POS */}
       {currentView === 'storefront' ? (
         <Storefront

@@ -5,6 +5,7 @@ import {
   Tag, ArrowLeft, RefreshCw, AlertTriangle, CheckCircle, ShieldCheck,
   Clock, DollarSign, Wallet, Phone, Sparkles
 } from 'lucide-react';
+import Logo from './Logo';
 import BarcodeView from './BarcodeView';
 import UpiQrView from './UpiQrView';
 import ThermalReceipt from './ThermalReceipt';
@@ -392,28 +393,16 @@ export default function FranchisePosTerminal({
   const totalGstCollected = salesHistory.reduce((s, b) => s + (b.cgst + b.sgst), 0);
 
   return (
-    <div className="min-h-screen bg-[#F4EFE6] text-gray-900 flex flex-col font-sans select-none">
+    <div className="min-h-screen bg-[#FAF7F2] text-gray-900 flex flex-col font-sans select-none">
       
       {/* TOP POS MALL BANNER & STATUS BAR */}
-      <header className="bg-gradient-to-r from-[#032D22] via-[#064E3B] to-[#0D7A57] text-white px-4 py-2.5 shadow-md border-b-2 border-[#FF7722] flex flex-wrap items-center justify-between gap-3 z-30 no-print">
+      <header className="bg-gradient-to-r from-[#032D22] via-[#064E3B] to-[#043828] text-white px-4 py-2.5 shadow-md border-b-2 border-[#FF7722] flex flex-wrap items-center justify-between gap-3 z-30 no-print">
         {/* Store & Franchise Branding */}
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white text-[#064E3B] flex items-center justify-center font-serif font-black text-sm border-2 border-[#FF7722] shadow-sm">
-            SSS
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-serif font-black text-sm md:text-base tracking-wide text-white uppercase">
-                {storeInfo.name}
-              </h1>
-              <span className="px-2 py-0.5 bg-[#FF7722] text-white text-[10px] font-black rounded-full uppercase tracking-wider">
-                MALL POS #01
-              </span>
-            </div>
-            <p className="text-[11px] text-emerald-200">
-              Owner: Pooja Sharma ({storeInfo.ownerPhone}) • Head: Priyanshu Sharma ({storeInfo.managerPhone})
-            </p>
-          </div>
+          <Logo variant="full" size="sm" theme="light" />
+          <span className="px-2.5 py-1 bg-[#FF7722] text-white text-[10px] font-black rounded-full uppercase tracking-wider shadow-xs hidden sm:inline-block">
+            MALL POS #01
+          </span>
         </div>
 
         {/* Navigation Tabs */}
